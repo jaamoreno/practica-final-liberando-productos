@@ -1,0 +1,67 @@
+groups:
+ - name: kubernetes
+   rules:
+
+   - alert: exercise_A_alert
+     expr: kube_pod_status_phase{phase != "Running"} > 0
+     for: 15m 
+     labels: 
+       team: node
+     annotations:
+       summary: "Pods are too long not running"
+       description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not running for more than 15 minutes."
+
+   - alert: exercise_B_alert
+     expr: ((sum (container_cpu_system_seconds_total  {container_label_io_kubernetes_container_name="POD"} ) by (name)  ) /  ( sum (container_cpu_usage_seconds_total {container_label_io_kubernetes_container_name="POD"} ) by (name) )) > 0.9
+     for: 1m 
+     labels: 
+       team: node
+     annotations:
+       summary: "Containers with high CPU use"
+       description: "Containers with a lot of CPU in use"
+
+   - alert: exercise_C_alert
+     expr: ((sum (container_memory_usage_bytes{ container_label_io_kubernetes_container_name="POD"}) by (name)) / (sum (container_memory_max_usage_bytes{ container_label_io_kubernetes_container_name="POD"}) by (name))) > 0.8
+     for: 1m 
+     labels: 
+       team: node
+     annotations:
+       summary: "Containers with high memory use"
+       description: "Containers with a lot of memory use"
+
+   - alert: exercise_D_alert
+     expr: ((sum (container_cpu_system_seconds_total  {container_label_io_kubernetes_container_name="POD"} ) by (name)  ) /  ( sum (container_cpu_usage_seconds_total {container_label_io_kubernetes_container_name="POD"} ) by (name) )) < 0.5
+     for: 1m 
+     labels: 
+       team: node
+     annotations:
+       summary: "Containers with low CPU use"
+       description: "Containers with low CPU consumption"
+
+   - alert: exercise_F_alert
+     expr: (kube_deployment_status_replicas_available / kube_deployment_spec_replicas) != 1
+     for: 30m
+     labels:
+       team: node
+     annotations:
+       summary: "Deployments diff in number of available & spec replicas"
+       description: "Metric rule: (kube_deployment_status_replicas_available / kube_deployment_spec_replicas) != 1"
+
+   - alert: exercise_E_alert
+     expr: ((sum (container_memory_usage_bytes{ container_label_io_kubernetes_container_name="POD"}) by (name)) / (sum (container_memory_max_usage_bytes{ container_label_io_kubernetes_container_name="POD"}) by (name))) < 0.5
+     for: 1m
+     labels:
+       team: node
+     annotations:
+       summary: "Containers with low memory use"
+       description: "Containers with low memory use"
+
+   - alert: exercise_G_alert
+     expr: kube_endpoint_address_not_ready > 0
+     for: 10m
+     labels:
+       team: node
+     annotations:
+       summary: "Endpoints without address not ready for more than 10 min"
+       description: "kube_endpoint_address_not_ready > 0"
+

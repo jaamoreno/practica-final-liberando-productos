@@ -1,0 +1,37 @@
+global:
+  smtp_smarthost: "localhost:25"
+  smtp_from: "alertmanager@example.org"
+
+route:
+  group_by: ['alertname']
+
+  group_wait: 30s
+  group_interval: 60s
+  repeat_interval: 1h
+  receiver: infrastructure
+
+  routes:
+    - match_re:
+         service: ^(kubernetes|k8s|minikube)$
+      receiver: infrastructure
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']
+
+receivers:
+  - name: "infrastructure"
+    email_configs:
+    - to: "oncall-critical@example.com"
+      headers:
+          subject: '{{ template "email.subject" }}'
+      send_resolved: true
+      text: '{{ template "email.body" . }}'
+      from: "admin@example.com"
+
+templates:
+  - "/etc/alertmanager/alerts-template.tmpl"
+
